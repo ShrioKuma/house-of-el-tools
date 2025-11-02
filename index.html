@@ -599,18 +599,18 @@ Make it comprehensive, well-researched, and engaging!`;
                 
                 try {
                     const prompt = buildPrompt();
-                    const apiKey = getAPIConfig();
+                    const apiKey = getAPIConfig().trim();
                     
                     const response = await fetch("https://api.anthropic.com/v1/messages", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "x-api-key": apiKey,
-                            "anthropic-version": "2023-06-01"
+                            "x-api-key": apiKey
                         },
                         body: JSON.stringify({
                             model: "claude-sonnet-4-20250514",
                             max_tokens: 8000,
+                            anthropic_version: "2023-06-01",
                             messages: [{
                                 role: "user",
                                 content: prompt
@@ -928,4 +928,3 @@ Make it comprehensive, well-researched, and engaging!`;
     </script>
 </body>
 </html>
-<!-- Cache bust: 1762124659 -->
