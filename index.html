@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Research Generator - House of El Tools (One Stop Shop!)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <!-- DOCX Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.min.js"></script>
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.3em;
+            line-height: 1.6;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .textarea-field {
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .select-field {
+            cursor: pointer;
+        }
+        
+        .helper-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .generate-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .generate-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .generate-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 16px;
+        }
+        
+        .progress-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .progress-item.complete {
+            border-left-color: #10b981;
+        }
+        
+        .progress-item.error {
+            border-left-color: #ef4444;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .examples {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+        }
+        
+        .examples h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .example-chip {
+            display: inline-block;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .example-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+        
+        function OneStopShopGenerator() {
+            const [topic, setTopic] = useState('');
+            const [docType, setDocType] = useState('research');
+            const [length, setLength] = useState('medium');
+            const [style, setStyle] = useState('academic');
+            const [humanize, setHumanize] = useState('maximum');
+            const [outputFormat, setOutputFormat] = useState('docx');
+            const [additionalInfo, setAdditionalInfo] = useState('');
+            const [formatInstructions, setFormatInstructions] = useState('');
+            const [uploadedFiles, setUploadedFiles] = useState([]);
+            const [fileContents, setFileContents] = useState([]);
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [progress, setProgress] = useState([]);
+            
+            const exampleTopics = [
+                "Impact of Social Media on Mental Health",
+                "Restaurant Industry Trends in 2025",
+                "Artificial Intelligence in Healthcare",
+                "Climate Change Effects on Agriculture",
+                "Evolution of Remote Work Culture",
+                "Cryptocurrency and Financial Markets"
+            ];
+            
+            const handleFileUpload = async (e) => {
+                const files = Array.from(e.target.files);
+                setUploadedFiles(prev => [...prev, ...files]);
+                
+                // Extract text from files
+                for (const file of files) {
+                    const text = await extractTextFromFile(file);
+                    setFileContents(prev => [...prev, {
+                        filename: file.name,
+                        content: text
+                    }]);
+                }
+            };
+            
+            const removeFile = (index) => {
+                setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+                setFileContents(prev => prev.filter((_, i) => i !== index));
+            };
+            
+            const extractTextFromFile = async (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        const text = e.target.result;
+                        // For .txt and .md files, just use the text
+                        if (file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+                            resolve(text);
+                        } else {
+                            // For other files, return as text (simplified)
+                            // In production, you'd use proper PDF/DOCX parsers
+                            resolve(text);
+                        }
+                    };
+                    
+                    reader.onerror = reject;
+                    reader.readAsText(file);
+                });
+            };
+            
+            const addProgress = (message, type = 'info') => {
+                setProgress(prev => [...prev, {
+                    message,
+                    type,
+                    timestamp: new Date().toLocaleTimeString()
+                }]);
+            };
+            
+            const buildPrompt = () => {
+                const lengthGuide = {
+                    short: '5-10 pages',
+                    medium: '15-25 pages',
+                    long: '30-50 pages'
+                };
+                
+                const styleGuide = {
+                    academic: 'formal academic style with proper citations',
+                    professional: 'professional business style',
+                    casual: 'conversational and accessible style',
+                    technical: 'technical and detailed style for experts'
+                };
+                
+                const humanizeInstructions = {
+                    maximum: `
+CRITICAL HUMANIZATION INSTRUCTIONS (MAXIMUM LEVEL):
+
+You MUST write like a real human student/researcher would. This is ESSENTIAL to bypass AI detection:
+
+1. VARY YOUR SENTENCE STRUCTURE DRAMATICALLY:
+   - Mix short punchy sentences with longer, more complex ones
+   - Use occasional sentence fragments for emphasis
+   - Include some run-on sentences (but not too many)
+   - Start sentences differently (avoid always starting with subject-verb)
+
+2. ADD HUMAN IMPERFECTIONS:
+   - Use contractions naturally (it's, don't, can't, we'll)
+   - Include occasional parenthetical asides (like this one)
+   - Add qualifying phrases: "perhaps", "it seems", "one might argue"
+   - Use hedging language: "tends to", "appears to", "suggests that"
+   - Include personal observations: "Interestingly,", "Notably,", "It's worth noting"
+
+3. INJECT PERSONALITY & VOICE:
+   - Express opinions naturally: "I believe", "In my view"
+   - Use transitional phrases that humans use: "That said,", "However,", "On the other hand"
+   - Include rhetorical questions occasionally
+   - Add emphasis through italics or structure (not just bold)
+
+4. MAKE IT FEEL AUTHENTIC:
+   - Don't be PERFECTLY consistent in terminology (humans aren't)
+   - Vary paragraph lengths (some short, some long)
+   - Include examples that feel personal or specific
+   - Let some sentences be slightly awkward (humans aren't perfect)
+   - Use "we" and "our" to create engagement
+
+5. AVOID AI TELLS:
+   - NO overly sophisticated vocabulary everywhere
+   - NO perfect parallel structure in every list
+   - NO robotic transitions between every paragraph
+   - NO consistently formal tone throughout
+   - Mix formal and slightly informal phrasing naturally
+
+6. ADD HUMAN THINKING PATTERNS:
+   - Show thinking progression: "Initially... however... ultimately..."
+   - Include course corrections: "While X appears true, closer examination reveals..."
+   - Add nuance: "Although... it's important to note..."
+   - Show uncertainty where appropriate: "may", "might", "could potentially"
+
+WRITE AS IF YOU'RE A SMART HUMAN, NOT A PERFECT AI. Include the natural "imperfections" that make writing human.`,
+                    
+                    moderate: `
+HUMANIZATION INSTRUCTIONS (MODERATE LEVEL):
+
+Write naturally with these human elements:
+
+1. Vary sentence structure and length
+2. Use contractions where natural (it's, don't, can't)
+3. Include personal voice: "I believe", "one might argue"
+4. Mix formal and conversational tones appropriately
+5. Add transitional phrases humans use
+6. Don't be perfectly consistent (humans aren't)
+7. Include occasional parenthetical comments
+8. Show natural thinking progression
+
+Make it feel written by an engaged, thoughtful human writer.`,
+                    
+                    minimal: `
+HUMANIZATION INSTRUCTIONS (MINIMAL LEVEL):
+
+Add subtle human elements:
+- Occasional contractions
+- Varied sentence structure
+- Personal voice in appropriate places
+- Natural transitions
+
+Keep it mostly polished but with authentic human touches.`,
+                    
+                    none: ''
+                };
+                
+                return `Create a ${docType === 'research' ? 'comprehensive research paper' : 
+                        docType === 'summary' ? 'executive summary' :
+                        docType === 'presentation' ? 'presentation outline' :
+                        'blog post'} about: "${topic}"
+
+${fileContents.length > 0 ? `
+REFERENCE MATERIALS PROVIDED:
+${fileContents.map((file, i) => `
+--- FILE ${i + 1}: ${file.filename} ---
+${file.content.substring(0, 3000)}${file.content.length > 3000 ? '...[truncated]' : ''}
+--- END OF FILE ${i + 1} ---
+`).join('\n')}
+
+IMPORTANT: Analyze and incorporate insights from the reference materials above. Reference them appropriately in your paper.
+` : ''}
+
+LENGTH: ${lengthGuide[length]}
+STYLE: ${styleGuide[style]}
+
+${humanizeInstructions[humanize]}
+
+${additionalInfo ? `CONTENT REQUIREMENTS:\n${additionalInfo}\n` : ''}
+
+${formatInstructions ? `FORMATTING REQUIREMENTS:\n${formatInstructions}\n` : ''}
+
+STRUCTURE:
+${docType === 'research' ? `
+- Title and Abstract
+- Introduction
+- Background/Literature Review  
+- Methodology (if applicable)
+- Main Body (well-organized sections)
+- Discussion
+- Conclusion
+- References
+` : docType === 'summary' ? `
+- Executive Summary (1 paragraph)
+- Key Points (5-7 main insights)
+- Implications
+- Recommendations
+` : docType === 'presentation' ? `
+- Slide-by-slide outline
+- Key points for each slide
+- Visual suggestions
+- Speaker notes
+` : `
+- Engaging introduction
+- Main content (well-structured)
+- Examples and case studies
+- Conclusion with takeaways
+`}
+
+${formatInstructions ? 'IMPORTANT: Follow all formatting requirements specified above precisely.' : ''}
+
+${humanize !== 'none' ? 'CRITICAL: The humanization instructions above are ESSENTIAL. Write like a real human would, with natural imperfections and authentic voice.' : ''}
+
+Make it comprehensive, well-researched, and engaging!`;
+            };
+            
+            const convertToDocx = async (markdownText) => {
+                const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docx;
+                
+                // Parse markdown and create docx elements
+                const lines = markdownText.split('\n');
+                const children = [];
+                
+                for (let line of lines) {
+                    if (line.startsWith('# ')) {
+                        // H1 - Title
+                        children.push(new Paragraph({
+                            text: line.replace('# ', ''),
+                            heading: HeadingLevel.HEADING_1,
+                            spacing: { before: 400, after: 200 }
+                        }));
+                    } else if (line.startsWith('## ')) {
+                        // H2 - Section
+                        children.push(new Paragraph({
+                            text: line.replace('## ', ''),
+                            heading: HeadingLevel.HEADING_2,
+                            spacing: { before: 300, after: 150 }
+                        }));
+                    } else if (line.startsWith('### ')) {
+                        // H3 - Subsection
+                        children.push(new Paragraph({
+                            text: line.replace('### ', ''),
+                            heading: HeadingLevel.HEADING_3,
+                            spacing: { before: 200, after: 100 }
+                        }));
+                    } else if (line.trim() === '') {
+                        // Empty line
+                        children.push(new Paragraph({ text: '' }));
+                    } else if (line.startsWith('**') && line.endsWith('**')) {
+                        // Bold text
+                        children.push(new Paragraph({
+                            children: [new TextRun({ text: line.replace(/\*\*/g, ''), bold: true })],
+                            spacing: { after: 100 }
+                        }));
+                    } else {
+                        // Regular paragraph
+                        children.push(new Paragraph({
+                            text: line,
+                            spacing: { after: 100 }
+                        }));
+                    }
+                }
+                
+                const doc = new Document({
+                    sections: [{
+                        properties: {},
+                        children: children
+                    }]
+                });
+                
+                return await Packer.toBlob(doc);
+            };
+            
+            const convertToPdf = async (markdownText) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Simple text wrapping for PDF
+                const lines = markdownText.split('\n');
+                let y = 20;
+                
+                for (let line of lines) {
+                    if (y > 280) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    
+                    if (line.startsWith('# ')) {
+                        doc.setFontSize(20);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(line.replace('# ', ''), 20, y);
+                        y += 15;
+                    } else if (line.startsWith('## ')) {
+                        doc.setFontSize(16);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(line.replace('## ', ''), 20, y);
+                        y += 12;
+                    } else if (line.startsWith('### ')) {
+                        doc.setFontSize(14);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(line.replace('### ', ''), 20, y);
+                        y += 10;
+                    } else if (line.trim() !== '') {
+                        doc.setFontSize(11);
+                        doc.setFont(undefined, 'normal');
+                        const splitText = doc.splitTextToSize(line, 170);
+                        doc.text(splitText, 20, y);
+                        y += splitText.length * 7;
+                    } else {
+                        y += 5;
+                    }
+                }
+                
+                return doc.output('blob');
+            };
+            
+            const generateDocument = async () => {
+                if (!topic.trim()) {
+                    alert('Please enter a topic!');
+                    return;
+                }
+                
+                setIsGenerating(true);
+                setProgress([]);
+                
+                if (fileContents.length > 0) {
+                    addProgress(`📎 ${fileContents.length} file(s) uploaded and ready to analyze`, 'info');
+                }
+                
+                addProgress(`🚀 Generating ${docType} on "${topic}"...`, 'info');
+                
+                try {
+                    const prompt = buildPrompt();
+                    
+                    const response = await fetch("https://api.anthropic.com/v1/messages", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            model: "claude-sonnet-4-20250514",
+                            max_tokens: 8000,
+                            messages: [{
+                                role: "user",
+                                content: prompt
+                            }]
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+                    
+                    addProgress('📝 Content generated! Converting to your format...', 'info');
+                    
+                    const data = await response.json();
+                    const content = data.content[0].text;
+                    
+                    // Create filename
+                    const cleanTopic = topic.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    const extension = outputFormat;
+                    const filename = `${cleanTopic}_${docType}.${extension}`;
+                    
+                    let blob;
+                    
+                    // Convert based on format - ALL IN BROWSER!
+                    if (outputFormat === 'docx') {
+                        addProgress('🔄 Converting to DOCX format (in browser)...', 'info');
+                        blob = await convertToDocx(content);
+                    } else if (outputFormat === 'pdf') {
+                        addProgress('🔄 Converting to PDF format (in browser)...', 'info');
+                        blob = await convertToPdf(content);
+                    } else if (outputFormat === 'txt') {
+                        // Plain text - strip markdown
+                        const txtContent = content
+                            .replace(/#{1,6}\s/g, '')
+                            .replace(/\*\*/g, '')
+                            .replace(/\*/g, '')
+                            .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+                        blob = new Blob([txtContent], { type: 'text/plain' });
+                    } else {
+                        // Markdown
+                        blob = new Blob([content], { type: 'text/markdown' });
+                    }
+                    
+                    // Download
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    addProgress(`✅ Document complete! Downloaded as ${filename}`, 'complete');
+                    addProgress(`💎 ONE STOP SHOP - No external sites needed!`, 'complete');
+                    
+                } catch (error) {
+                    addProgress(`❌ Error: ${error.message}`, 'error');
+                }
+                
+                setIsGenerating(false);
+            };
+            
+            return (
+                <div className="container">
+                    <div className="header">
+                        <div className="title">🎓 AI Research Generator 🎓</div>
+                        <div className="subtitle">
+                            Generate professional documents on ANY topic in minutes
+                        </div>
+                        <div className="badge">✨ ONE STOP SHOP - No external conversions needed!</div>
+                    </div>
+                    
+                    <div className="examples">
+                        <h3>💡 Example Topics (Click to use):</h3>
+                        {exampleTopics.map((example, i) => (
+                            <div
+                                key={i}
+                                className="example-chip"
+                                onClick={() => setTopic(example)}
+                            >
+                                {example}
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="input-section">
+                        <div className="input-group">
+                            <label className="input-label">📚 What topic do you want to research?</label>
+                            <textarea
+                                className="input-field textarea-field"
+                                placeholder="Example: The impact of artificial intelligence on modern healthcare systems"
+                                value={topic}
+                                onChange={(e) => setTopic(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="input-group">
+                            <label className="input-label">
+                                📎 Upload Reference Materials (Optional)
+                                <span style={{fontSize: '0.85em', fontWeight: 'normal', marginLeft: '10px', color: '#666'}}>
+                                    Case studies, articles, data, etc.
+                                </span>
+                            </label>
+                            <input
+                                type="file"
+                                className="input-field"
+                                accept=".pdf,.docx,.txt,.md"
+                                multiple
+                                onChange={handleFileUpload}
+                                style={{padding: '12px'}}
+                            />
+                            <div className="helper-text">
+                                💡 Upload case studies, research papers, or reference materials - AI will analyze and incorporate them!
+                            </div>
+                            {uploadedFiles.length > 0 && (
+                                <div style={{marginTop: '15px'}}>
+                                    <strong>Uploaded files:</strong>
+                                    {uploadedFiles.map((file, i) => (
+                                        <div key={i} style={{
+                                            background: 'white',
+                                            padding: '10px',
+                                            marginTop: '8px',
+                                            borderRadius: '8px',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}>
+                                            <span>📄 {file.name} ({(file.size / 1024).toFixed(1)}KB)</span>
+                                            <button
+                                                onClick={() => removeFile(i)}
+                                                style={{
+                                                    background: '#ef4444',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '5px 15px',
+                                                    borderRadius: '6px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="input-group">
+                            <label className="input-label">📄 Document Type</label>
+                            <select
+                                className="input-field select-field"
+                                value={docType}
+                                onChange={(e) => setDocType(e.target.value)}
+                            >
+                                <option value="research">Research Paper (Full Paper)</option>
+                                <option value="summary">Executive Summary (Short)</option>
+                                <option value="presentation">Presentation Outline (Slides)</option>
+                                <option value="blog">Blog Post (Web Article)</option>
+                            </select>
+                        </div>
+                        
+                        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px'}}>
+                            <div className="input-group">
+                                <label className="input-label">📏 Length</label>
+                                <select
+                                    className="input-field select-field"
+                                    value={length}
+                                    onChange={(e) => setLength(e.target.value)}
+                                >
+                                    <option value="short">Short (5-10 pages)</option>
+                                    <option value="medium">Medium (15-25 pages)</option>
+                                    <option value="long">Long (30-50 pages)</option>
+                                </select>
+                            </div>
+                            
+                            <div className="input-group">
+                                <label className="input-label">✍️ Writing Style</label>
+                                <select
+                                    className="input-field select-field"
+                                    value={style}
+                                    onChange={(e) => setStyle(e.target.value)}
+                                >
+                                    <option value="academic">Academic (Formal)</option>
+                                    <option value="professional">Professional (Business)</option>
+                                    <option value="casual">Casual (Easy to Read)</option>
+                                    <option value="technical">Technical (Expert Level)</option>
+                                </select>
+                            </div>
+                            
+                            <div className="input-group">
+                                <label className="input-label">
+                                    🎭 Humanize Writing
+                                    <span style={{fontSize: '0.85em', fontWeight: 'normal', marginLeft: '10px', color: '#666'}}>
+                                        Bypasses AI detection tools
+                                    </span>
+                                </label>
+                                <select
+                                    className="input-field select-field"
+                                    value={humanize}
+                                    onChange={(e) => setHumanize(e.target.value)}
+                                >
+                                    <option value="maximum">🔥 Maximum (Recommended for school)</option>
+                                    <option value="moderate">⚡ Moderate (Balanced)</option>
+                                    <option value="minimal">💎 Minimal (More polished)</option>
+                                    <option value="none">🤖 None (Pure AI)</option>
+                                </select>
+                                <div className="helper-text">
+                                    💡 Higher humanization = harder to detect as AI-generated
+                                </div>
+                            </div>
+                            
+                            <div className="input-group">
+                                <label className="input-label">💾 Output Format</label>
+                                <select
+                                    className="input-field select-field"
+                                    value={outputFormat}
+                                    onChange={(e) => setOutputFormat(e.target.value)}
+                                >
+                                    <option value="docx">📄 Word Document (.docx)</option>
+                                    <option value="pdf">📕 PDF Document (.pdf)</option>
+                                    <option value="md">📝 Markdown (.md)</option>
+                                    <option value="txt">📃 Plain Text (.txt)</option>
+                                </select>
+                                <div className="helper-text">
+                                    ✨ Converted automatically - no external sites!
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="input-group">
+                            <label className="input-label">📝 Additional Requirements (Optional)</label>
+                            <textarea
+                                className="input-field textarea-field"
+                                placeholder="Example: Focus on NYC restaurants, include statistics from 2020-2025, compare fine dining vs fast casual"
+                                value={additionalInfo}
+                                onChange={(e) => setAdditionalInfo(e.target.value)}
+                                style={{minHeight: '80px'}}
+                            />
+                        </div>
+                        
+                        <div className="input-group">
+                            <label className="input-label">
+                                ⚙️ Advanced Formatting Instructions (Optional)
+                                <span style={{fontSize: '0.85em', fontWeight: 'normal', marginLeft: '10px', color: '#666'}}>
+                                    Be specific about citations, headers, page layout, etc.
+                                </span>
+                            </label>
+                            <textarea
+                                className="input-field textarea-field"
+                                placeholder="Example:
+• Use APA 7th edition citation style
+• Include page numbers in footer
+• Add 'Your Name - Research Paper' in header
+• Target exactly 15 pages
+• Include at least 10 scholarly sources
+• Add table of contents after abstract
+• Use 1-inch margins, Times New Roman 12pt
+• Double-spaced throughout"
+                                value={formatInstructions}
+                                onChange={(e) => setFormatInstructions(e.target.value)}
+                                style={{minHeight: '150px'}}
+                            />
+                            <div className="helper-text">
+                                💡 Tip: The more specific you are, the better the output!
+                            </div>
+                        </div>
+                        
+                        <button
+                            className="generate-button"
+                            onClick={generateDocument}
+                            disabled={isGenerating}
+                        >
+                            {isGenerating ? '⏳ Generating...' : '🚀 Generate Document'}
+                        </button>
+                    </div>
+                    
+                    {progress.length > 0 && (
+                        <div className="progress-section">
+                            <h3 style={{marginBottom: '20px', color: '#333'}}>Progress:</h3>
+                            {progress.map((item, index) => (
+                                <div key={index} className={`progress-item ${item.type}`}>
+                                    {item.type === 'info' && isGenerating && index === progress.length - 1 && (
+                                        <div className="spinner"></div>
+                                    )}
+                                    <div>
+                                        <strong>{item.timestamp}</strong> - {item.message}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    
+                    <div className="footer">
+                        <strong>FOR HOUSE OF EL! 👑</strong>
+                        <br />
+                        AI Research Generator v2.0 - ONE STOP SHOP Edition
+                        <br />
+                        Built by King Jor-EL George
+                        <br />
+                        © 2025 Jor-EL George / House of El - All Rights Reserved
+                        <br />
+                        <a href="https://kumaartileia.com" target="_blank">KUMA Artileia LLC</a>
+                        <br />
+                        "I wasn't created to settle" 💎
+                    </div>
+                </div>
+            );
+        }
+        
+        ReactDOM.render(<OneStopShopGenerator />, document.getElementById('root'));
+    </script>
+</body>
+</html>
