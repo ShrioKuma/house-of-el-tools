@@ -585,22 +585,20 @@ Make it comprehensive, well-researched, and engaging!`;
                 
                 try {
                     const prompt = buildPrompt();
-                    const apiKey = getAPIConfig().trim();
-                    
-                    const response = await fetch("https://api.anthropic.com/v1/messages", {
-                        method: "POST",
+
+                    const response = await fetch('https://house-of-el-backend-7m7b6jie8-jor-el-georges-projects.vercel.app/api/generate', {
+                        method: 'POST',
                         headers: {
-                            "Content-Type": "application/json",
-                            "x-api-key": apiKey
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            model: "claude-sonnet-4-20250514",
-                            max_tokens: 8000,
-                            anthropic_version: "2023-06-01",
                             messages: [{
                                 role: "user",
                                 content: prompt
-                            }]
+                            }],
+                            model: 'claude-sonnet-4-20250514',
+                            max_tokens: 8000,
+                            temperature: 0.7
                         })
                     });
                     
